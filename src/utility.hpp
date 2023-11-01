@@ -9,10 +9,11 @@
 template <class Func>
 void each_input_bit(const std::string& input_filename, size_t num_ap, Func func)
 {
-    std::ifstream ifs{input_filename};
+    std::ifstream ifs{ input_filename };
     assert(ifs);
 
     size_t rest = 0;
+    int x = 0;
     while (ifs) {
         int ch = ifs.get();
         if (ch == EOF)
@@ -24,8 +25,10 @@ void each_input_bit(const std::string& input_filename, size_t num_ap, Func func)
             bool b = (v & 1u) != 0;
             v >>= 1;
             func(b);
+            x += 1;
         }
     }
+    std::cout << x << std::endl;
     assert(rest == 0);
 }
 

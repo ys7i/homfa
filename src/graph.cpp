@@ -55,20 +55,20 @@ public:
 };
 
 void nfa_dump_dot(std::ostream& os, const std::set<Graph::State>& init_sts,
-                  const std::set<Graph::State>& final_sts,
-                  const Graph::NFADelta& delta)
+    const std::set<Graph::State>& final_sts,
+    const Graph::NFADelta& delta)
 {
     os << "digraph \"graph\" {\n"
-       << "rankdir=\"LR\""
-       << "  node[shape=\"circle\"]\n"
-       << "  I [label=\"\", style=invis, width=0]\n"
-       << "  I -> I0\n"
-       << "  I0 [label=\"\"]\n";
+        << "rankdir=\"LR\""
+        << "  node[shape=\"circle\"]\n"
+        << "  I [label=\"\", style=invis, width=0]\n"
+        << "  I -> I0\n"
+        << "  I0 [label=\"\"]\n";
     for (Graph::State q : init_sts)
         os << "  I0 -> " << q << " [label=\"ε\"]\n";
     for (auto&& [q, q0s, q1s] : delta) {
         os << "  " << q << " [label=\"" << q << "\""
-           << (final_sts.contains(q) ? ", peripheries=2" : "") << "]";
+            << (final_sts.contains(q) ? ", peripheries=2" : "") << "]";
         for (Graph::State q0 : q0s) {
             if (std::find(q1s.begin(), q1s.end(), q0) == q1s.end())
                 os << "  " << q << " -> " << q0 << " [label=\"0\"]\n";
@@ -87,14 +87,14 @@ Graph::Graph()
 }
 
 Graph::Graph(State init_st, const std::set<State>& final_sts,
-             const DFADelta& delta)
+    const DFADelta& delta)
     : delta_(delta),
-      parents0_(delta.size()),
-      parents1_(delta.size()),
-      states_at_depth_(),
-      final_state_(final_sts),
-      final_state_vec_(delta.size(), false),
-      init_state_(init_st)
+    parents0_(delta.size()),
+    parents1_(delta.size()),
+    states_at_depth_(),
+    final_state_(final_sts),
+    final_state_vec_(delta.size(), false),
+    init_state_(init_st)
 {
     for (auto&& [q, q0, q1] : delta) {
         parents0_.at(q0).push_back(q);
@@ -114,7 +114,7 @@ Graph Graph::from_istream(std::istream& is)
 
         // Thanks to: https://faithandbrave.hateblo.jp/entry/2014/05/01/171631
         std::vector<State> ret;
-        std::istringstream iss{s};
+        std::istringstream iss{ s };
         std::string field;
         try {
             while (std::getline(iss, field, ','))
@@ -126,7 +126,7 @@ Graph Graph::from_istream(std::istream& is)
                 field, e.what());
         }
         return ret;
-    };
+        };
 
     std::set<State> init_sts, final_sts;
     NFADelta delta;
@@ -145,12 +145,12 @@ Graph Graph::from_istream(std::istream& is)
         bool initial = match[1].matched, final = match[3].matched;
         State q = delta.size();
         std::vector<State> q0s = load_comma_separated_states(match[4].str()),
-                           q1s = load_comma_separated_states(match[5].str());
+            q1s = load_comma_separated_states(match[5].str());
 
         // validate
         if (q != std::stoi(match[2].str()))
             error_die("Invalid state number: {} != {}",
-                      std::stoi(match[2].str()), q);
+                std::stoi(match[2].str()), q);
 
         if (initial)
             init_sts.insert(q);
@@ -187,7 +187,7 @@ Graph Graph::from_istream(std::istream& is)
             assert(q0s.size() == 1 && q1s.size() == 1);
             new_delta.emplace_back(q, q0s.at(0), q1s.at(0));
         }
-        return Graph{*init_sts.begin(), final_sts, new_delta};
+        return Graph{ *init_sts.begin(), final_sts, new_delta };
     }
 
     return Graph::from_nfa(init_sts, final_sts, delta);
@@ -195,7 +195,7 @@ Graph Graph::from_istream(std::istream& is)
 
 Graph Graph::from_file(const std::string& filename)
 {
-    std::ifstream ifs{filename};
+    std::ifstream ifs{ filename };
     assert(ifs);
     return Graph::from_istream(ifs);
 }
@@ -204,7 +204,7 @@ Graph Graph::from_att_istream(std::istream& is)
 {
     assert(is);
 
-    std::set<State> init_sts = {0}, final_sts = {};
+    std::set<State> init_sts = { 0 }, final_sts = {};
     NFADelta delta;
 
     std::regex re1(R"(^([0-9]+)\t([0-9]+)\t(0|1)$)"), re2(R"(^([0-9]+)$)");
@@ -215,7 +215,7 @@ Graph Graph::from_att_istream(std::istream& is)
             int from = std::stoi(match[1].str()),
                 to = std::stoi(match[2].str()), ch = std::stoi(match[3].str());
             while (delta.size() <= from)
-                delta.push_back({delta.size(), {}, {}});
+                delta.push_back({ delta.size(), {}, {} });
             if (ch == 0)
                 std::get<1>(delta.at(from)).push_back(to);
             else if (ch == 1)
@@ -237,7 +237,7 @@ Graph Graph::from_att_istream(std::istream& is)
 
 Graph Graph::from_att_file(const std::string& filename)
 {
-    std::ifstream ifs{filename};
+    std::ifstream ifs{ filename };
     if (!ifs)
         error_die("Invalid filename: {}", filename);
     return Graph::from_att_istream(ifs);
@@ -246,7 +246,7 @@ Graph Graph::from_att_file(const std::string& filename)
 // Input  NFA Mn: (Qn, {0, 1}, dn, q0n, Fn)
 // Output DFA Md: (Qd, {0, 1}, df, q0f, Ff)
 Graph Graph::from_nfa(const std::set<State>& q0n, const std::set<State>& Fn,
-                      const NFADelta& dn)
+    const NFADelta& dn)
 {
     using StateSubset = std::set<State>;
 
@@ -265,7 +265,7 @@ Graph Graph::from_nfa(const std::set<State>& q0n, const std::set<State>& Fn,
         df.emplace_back(qsd, -1, -1);
         st_map.emplace(qs, qsd);
         return qsd;
-    };
+        };
 
     /*
     auto dump_qs = [](const auto &qs, std::string prefix = "") {
@@ -294,10 +294,10 @@ Graph Graph::from_nfa(const std::set<State>& q0n, const std::set<State>& Fn,
             qs1.insert(dst1.begin(), dst1.end());
         }
         bool final = std::any_of(qs.begin(), qs.end(),
-                                 [&Fn](size_t q) { return Fn.contains(q); });
+            [&Fn](size_t q) { return Fn.contains(q); });
 
         State qsd = get_or_create_state(qs), qs0d = get_or_create_state(qs0),
-              qs1d = get_or_create_state(qs1);
+            qs1d = get_or_create_state(qs1);
         df.at(qsd) = std::make_tuple(qsd, qs0d, qs1d);
 
         visited.insert(qs);
@@ -307,11 +307,11 @@ Graph Graph::from_nfa(const std::set<State>& q0n, const std::set<State>& Fn,
         que.push(qs1);
     }
 
-    return Graph{get_or_create_state(q0n), Ff, df};
+    return Graph{ get_or_create_state(q0n), Ff, df };
 }
 
 Graph Graph::from_ltl_formula(const std::string& formula, size_t var_size,
-                              bool make_all_live_states_final)
+    bool make_all_live_states_final)
 {
     auto [init_sts, final_sts, delta] =
         ltl_to_nfa_tuple(formula, var_size, make_all_live_states_final);
@@ -319,8 +319,8 @@ Graph Graph::from_ltl_formula(const std::string& formula, size_t var_size,
 }
 
 Graph Graph::from_ltl_formula_reversed(const std::string& formula,
-                                       size_t var_size,
-                                       bool make_all_live_states_final)
+    size_t var_size,
+    bool make_all_live_states_final)
 {
     auto [init_sts, final_sts, delta] =
         ltl_to_nfa_tuple(formula, var_size, make_all_live_states_final);
@@ -346,7 +346,7 @@ Graph::State Graph::next_state(State state, bool input) const
 }
 
 const std::vector<Graph::State>& Graph::prev_states(State state,
-                                                    bool input) const
+    bool input) const
 {
     if (input)
         return parents1_.at(state);
@@ -413,7 +413,7 @@ std::vector<std::vector<Graph::State>> Graph::track_live_states(
     at_depth.push_back(init_live_states);
 
     std::set<Graph::State> tmp1(init_live_states.begin(),
-                                init_live_states.end()),
+        init_live_states.end()),
         tmp2;
     for (size_t i = 0; i < max_depth; i++) {
         tmp2.clear();
@@ -438,7 +438,7 @@ Graph Graph::reversed() const
         delta.at(q) =
             std::make_tuple(q, prev_states(q, false), prev_states(q, true));
     }
-    return Graph::from_nfa(final_state_, {initial_state()}, delta);
+    return Graph::from_nfa(final_state_, { initial_state() }, delta);
 }
 
 Graph Graph::minimized() const
@@ -475,11 +475,11 @@ Graph Graph::removed_unreachable() const
         if (!reachable.contains(index))
             continue;
         State q = old2new.at(index), q0 = old2new.at(child0),
-              q1 = old2new.at(child1);
+            q1 = old2new.at(child1);
         delta.at(q) = std::make_tuple(q, q0, q1);
     }
 
-    return Graph{init_st, final_sts, delta};
+    return Graph{ init_st, final_sts, delta };
 }
 
 Graph Graph::grouped_nondistinguishable() const
@@ -501,7 +501,7 @@ Graph Graph::grouped_nondistinguishable() const
         auto [ql, qr] = que.front();
         que.pop();
         assert(ql < qr);
-        const static bool bv[] = {true, false};
+        const static bool bv[] = { true, false };
         for (bool in : bv) {
             for (State qa : prev_states(ql, in)) {
                 for (State qb : prev_states(qr, in)) {
@@ -550,7 +550,7 @@ Graph Graph::grouped_nondistinguishable() const
 
         bool initial = std::any_of(s.begin(), s.end(), [this](State q) {
             return initial_state() == q;
-        });
+            });
         bool final = is_final_state(repr);
         if (initial)
             init_st.emplace(q);
@@ -558,11 +558,11 @@ Graph Graph::grouped_nondistinguishable() const
             final_sts.insert(q);
 
         State q0 = uf2st.at(uf.find(next_state(repr, false))),
-              q1 = uf2st.at(uf.find(next_state(repr, true)));
+            q1 = uf2st.at(uf.find(next_state(repr, true)));
         delta.emplace_back(q, q0, q1);
     }
 
-    return Graph{init_st.value(), final_sts, delta};
+    return Graph{ init_st.value(), final_sts, delta };
 }
 
 Graph Graph::negated() const
@@ -571,7 +571,7 @@ Graph Graph::negated() const
     for (Graph::State q : all_states())
         if (!is_final_state(q))
             new_final.insert(q);
-    return Graph{init_state_, new_final, delta_};
+    return Graph{ init_state_, new_final, delta_ };
 }
 
 void Graph::dump(std::ostream& os) const
@@ -593,14 +593,14 @@ void Graph::dump(std::ostream& os) const
 void Graph::dump_dot(std::ostream& os) const
 {
     os << "digraph \"graph\" {\n"
-       << "rankdir=\"LR\""
-       << "  node[shape=\"circle\"]\n"
-       << "  I [label=\"\", style=invis, width=0]\n"
-       << "  I -> " << initial_state() << "\n";
+        << "rankdir=\"LR\""
+        << "  node[shape=\"circle\"]\n"
+        << "  I [label=\"\", style=invis, width=0]\n"
+        << "  I -> " << initial_state() << "\n";
     for (Graph::State q : all_states()) {
         Graph::State q0 = next_state(q, false), q1 = next_state(q, true);
         os << "  " << q << " [label=\"" << q << "\""
-           << (is_final_state(q) ? ", peripheries=2" : "") << "]";
+            << (is_final_state(q) ? ", peripheries=2" : "") << "]";
         if (q0 == q1) {
             os << "  " << q << " -> " << q0 << " [label=\"0,1\"]\n";
         }
@@ -616,7 +616,7 @@ void Graph::dump_att(std::ostream& os) const
 {
     for (Graph::State q : all_states()) {
         os << q << "\t" << next_state(q, false) << "\t0\n"
-           << q << "\t" << next_state(q, true) << "\t1\n";
+            << q << "\t" << next_state(q, true) << "\t1\n";
         if (is_final_state(q))
             os << q << "\n";
     }
@@ -630,7 +630,7 @@ spot::twa_graph_ptr ltl_to_monitor(const std::string& formula, size_t var_size)
     spot::twa_graph_ptr aut = spot::make_twa_graph(dict);
     for (size_t i = 0; i < var_size; i++)
         aut->register_ap(fmt::format("p{}", i));
-    spot::translator trans{dict};
+    spot::translator trans{ dict };
     trans.set_type(spot::postprocessor::Monitor);
     trans.set_pref(spot::postprocessor::Any);
     return trans.run(pf.f);
@@ -638,7 +638,7 @@ spot::twa_graph_ptr ltl_to_monitor(const std::string& formula, size_t var_size)
 
 std::tuple<std::set<Graph::State>, std::set<Graph::State>, Graph::NFADelta>
 Graph::ltl_to_nfa_tuple(const std::string& formula, size_t var_size,
-                        bool make_all_live_states_final)
+    bool make_all_live_states_final)
 {
     spot::twa_graph_ptr aut = ltl_to_monitor(formula, var_size);
 
@@ -656,7 +656,7 @@ Graph::ltl_to_nfa_tuple(const std::string& formula, size_t var_size,
     size_t ns = aut->num_states();
     NFADelta delta;
     for (State i = 0; i < ns; i++)
-        delta.push_back({i, {}, {}});
+        delta.push_back({ i, {}, {} });
     for (State src = 0; src < ns; src++) {
         spdlog::debug("{}/{}", src, ns);
         for (auto& t : aut->out(src)) {
@@ -674,14 +674,14 @@ Graph::ltl_to_nfa_tuple(const std::string& formula, size_t var_size,
                     if (it != bdd2rst.end())
                         return it->second;
                     State q = reversed.size();
-                    reversed.push_back({q, {}, {}, b});
+                    reversed.push_back({ q, {}, {}, b });
                     bdd2rst.emplace(b, q);
                     return q;
-                };
+                    };
 
                 std::queue<bdd> que;
                 que.push(t.cond);
-                reversed.push_back({0, {}, {}, t.cond});
+                reversed.push_back({ 0, {}, {}, t.cond });
                 bdd2rst.emplace(t.cond, 0);
                 std::set<bdd, spot::bdd_less_than> visited;
                 while (!que.empty()) {
@@ -724,14 +724,14 @@ Graph::ltl_to_nfa_tuple(const std::string& formula, size_t var_size,
                 if (it != rst2st.end())
                     return it->second;
                 State q = delta.size();
-                delta.push_back({q, {}, {}});
+                delta.push_back({ q, {}, {} });
                 rst2st.emplace(rq, q);
                 return q;
-            };
+                };
 
             std::set<State> visited;
             std::queue<std::tuple<State, size_t, State>> que;
-            que.push({bdd2rst.at(bddtrue), var_size, dst});
+            que.push({ bdd2rst.at(bddtrue), var_size, dst });
             std::optional<State> src_alt;
             while (!que.empty()) {
                 auto [cur_rq, cur_var_idx, cur_q] = que.front();
@@ -754,7 +754,7 @@ Graph::ltl_to_nfa_tuple(const std::string& formula, size_t var_size,
                     while (cur_var_idx > 0) {
                         cur_var_idx--;
                         State q = delta.size();
-                        delta.push_back({q, {cur_q}, {cur_q}});
+                        delta.push_back({ q, {cur_q}, {cur_q} });
                         cur_q = q;
                     }
                     src_alt.emplace(cur_q);
@@ -770,13 +770,13 @@ Graph::ltl_to_nfa_tuple(const std::string& formula, size_t var_size,
                     while (cidx > q0_var_idx + 1) {
                         cidx--;
                         State q = delta.size();
-                        delta.push_back({q, {cq}, {cq}});
+                        delta.push_back({ q, {cq}, {cq} });
                         cq = q;
                         spdlog::debug("{}", cidx);
                     }
                     State next = get(q0);
                     std::get<1>(delta.at(next)).push_back(cq);
-                    que.push({q0, q0_var_idx, next});
+                    que.push({ q0, q0_var_idx, next });
                 }
                 for (State q1 : q1s) {
                     bdd b = std::get<3>(reversed.at(q1));
@@ -786,12 +786,12 @@ Graph::ltl_to_nfa_tuple(const std::string& formula, size_t var_size,
                     while (cidx > q1_var_idx + 1) {
                         cidx--;
                         State q = delta.size();
-                        delta.push_back({q, {cq}, {cq}});
+                        delta.push_back({ q, {cq}, {cq} });
                         cq = q;
                     }
                     State next = get(q1);
                     std::get<2>(delta.at(next)).push_back(cq);
-                    que.push({q1, q1_var_idx, next});
+                    que.push({ q1, q1_var_idx, next });
                 }
             }
             {
@@ -834,9 +834,9 @@ Graph::ltl_to_nfa_tuple(const std::string& formula, size_t var_size,
     }
     */
 
-    std::set<State> init_sts = {static_cast<State>(
-                        aut->get_init_state_number())},
-                    final_sts;
+    std::set<State> init_sts = { static_cast<State>(
+                        aut->get_init_state_number()) },
+        final_sts;
     if (make_all_live_states_final) {
         for (State i = 0; i < delta.size(); i++)
             final_sts.insert(i);

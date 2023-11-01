@@ -6,19 +6,19 @@
 #include <spdlog/spdlog.h>
 
 BackstreamDFARunner::BackstreamDFARunner(Graph graph, size_t boot_interval,
-                                         std::optional<size_t> input_size,
-                                         std::shared_ptr<GateKey> gate_key,
-                                         bool sanitize_result)
+    std::optional<size_t> input_size,
+    std::shared_ptr<GateKey> gate_key,
+    bool sanitize_result)
     : graph_(std::move(graph)),
-      weight_(graph_.size()),
-      gate_key_(std::move(gate_key)),
-      input_size_(std::move(input_size)),
-      boot_interval_(boot_interval),
-      num_processed_inputs_(0),
-      trlwelvl1_trivial_0_(trivial_TRLWELvl1_zero()),
-      trlwelvl1_trivial_1_(trivial_TRLWELvl1_1over2()),
-      sanitize_result_(sanitize_result),
-      workspace_(graph_.size())
+    weight_(graph_.size()),
+    gate_key_(std::move(gate_key)),
+    input_size_(std::move(input_size)),
+    boot_interval_(boot_interval),
+    num_processed_inputs_(0),
+    trlwelvl1_trivial_0_(trivial_TRLWELvl1_zero()),
+    trlwelvl1_trivial_1_(trivial_TRLWELvl1_1over2()),
+    sanitize_result_(sanitize_result),
+    workspace_(graph_.size())
 {
     assert(gate_key_);
 
@@ -30,14 +30,14 @@ BackstreamDFARunner::BackstreamDFARunner(Graph graph, size_t boot_interval,
 
     for (Graph::State st = 0; st < graph_.size(); st++)
         weight_.at(st) = graph_.is_final_state(st) ? trlwelvl1_trivial_1_
-                                                   : trlwelvl1_trivial_0_;
+        : trlwelvl1_trivial_0_;
 }
 
 TLWELvl1 BackstreamDFARunner::result() const
 {
     TLWELvl1 ret;
     TFHEpp::SampleExtractIndex<Lvl1>(ret, weight_.at(graph_.initial_state()),
-                                     0);
+        0);
     return ret;
 }
 
@@ -58,14 +58,14 @@ void BackstreamDFARunner::eval(const TRGSWLvl1FFT& input)
 
     timer_.timeit(TimeRecorder::TARGET::CMUX, states->size(), [&] {
         std::for_each(std::execution::par, states->begin(), states->end(),
-                      [&](Graph::State q) {
-                          Graph::State q0 = graph_.next_state(q, false),
-                                       q1 = graph_.next_state(q, true);
-                          const TRLWELvl1 &w0 = weight_.at(q0),
-                                          &w1 = weight_.at(q1);
-                          TFHEpp::CMUXFFT<Lvl1>(out.at(q), input, w1, w0);
-                      });
-    });
+        [&](Graph::State q) {
+                Graph::State q0 = graph_.next_state(q, false),
+                q1 = graph_.next_state(q, true);
+    const TRLWELvl1& w0 = weight_.at(q0),
+        & w1 = weight_.at(q1);
+    TFHEpp::CMUXFFT<Lvl1>(out.at(q), input, w1, w0);
+            });
+        });
     {
         using std::swap;
         swap(out, weight_);
@@ -84,9 +84,9 @@ void BackstreamDFARunner::bootstrap_weight(
     assert(gate_key_);
     timer_.timeit(TimeRecorder::TARGET::BOOTSTRAPPING, targets.size(), [&] {
         std::for_each(std::execution::par, targets.begin(), targets.end(),
-                      [&](Graph::State q) {
-                          TRLWELvl1& w = weight_.at(q);
-                          do_SEI_IKS_GBTLWE2TRLWE_2(w, *gate_key_);
-                      });
-    });
+        [&](Graph::State q) {
+                TRLWELvl1& w = weight_.at(q);
+                do_SEI_IKS_GBTLWE2TRLWE_2(w, *gate_key_);
+            });
+        });
 }

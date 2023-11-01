@@ -101,11 +101,11 @@ void TRGSWLvl1FFTDeserializer::load(TRGSWLvl1FFT& out)
 TRGSWLvl1InputStreamFromCtxtFile::TRGSWLvl1InputStreamFromCtxtFile(
     const std::string& filename)
     : ifs_(filename),
-      deser_(ifs_),
-      pool_(1),
-      running_(),
-      loaded_(),
-      current_size_()
+    deser_(ifs_),
+    pool_(1),
+    running_(),
+    loaded_(),
+    current_size_()
 {
     deser_.seek(0, std::ios_base::end);
     current_size_ = deser_.tell();
@@ -125,7 +125,7 @@ void TRGSWLvl1InputStreamFromCtxtFile::start_loading_next()
     running_ = pool_.enqueue([this] {
         deser_.load(loaded_);
         return true;
-    });
+        });
 }
 
 TRGSWLvl1FFT TRGSWLvl1InputStreamFromCtxtFile::next()
@@ -142,7 +142,7 @@ TRGSWLvl1FFT TRGSWLvl1InputStreamFromCtxtFile::next()
 ////////// ReversedTRGSWLvl1InputStreamFromCtxtFile
 
 ReversedTRGSWLvl1InputStreamFromCtxtFile::
-    ReversedTRGSWLvl1InputStreamFromCtxtFile(const std::string& filename)
+ReversedTRGSWLvl1InputStreamFromCtxtFile(const std::string& filename)
     : ifs_(filename), deser_(ifs_), pool_(1), current_size_(0)
 {
     deser_.seek(0, std::ios_base::end);
@@ -165,7 +165,7 @@ void ReversedTRGSWLvl1InputStreamFromCtxtFile::start_loading_next()
         deser_.load(loaded_);
         deser_.seek(-1, std::ios_base::cur);
         return true;
-    });
+        });
 }
 
 TRGSWLvl1FFT ReversedTRGSWLvl1InputStreamFromCtxtFile::next()
@@ -265,27 +265,27 @@ void TRLWELvl1_add(TRLWELvl1& out, const TRLWELvl1& src)
 }
 
 namespace {
-void PolyLvl1_mult_X_k(PolyLvl1& out, const PolyLvl1& src, size_t k)
-{
-    constexpr size_t n = Lvl1::n;
+    void PolyLvl1_mult_X_k(PolyLvl1& out, const PolyLvl1& src, size_t k)
+    {
+        constexpr size_t n = Lvl1::n;
 
-    if (k == 0) {
-        out = src;
+        if (k == 0) {
+            out = src;
+        }
+        else if (k < n) {
+            for (size_t i = 0; i < k; i++)
+                out[i] = -src[i - k + n];
+            for (size_t i = 0; i < n - k; i++)
+                out[i + k] = src[i];
+        }
+        else {
+            const size_t k2 = k - n;
+            for (size_t i = 0; i < k2; i++)
+                out[i] = src[i - k2 + n];
+            for (size_t i = 0; i < n - k2; i++)
+                out[i + k2] = -src[i];
+        }
     }
-    else if (k < n) {
-        for (size_t i = 0; i < k; i++)
-            out[i] = -src[i - k + n];
-        for (size_t i = 0; i < n - k; i++)
-            out[i + k] = src[i];
-    }
-    else {
-        const size_t k2 = k - n;
-        for (size_t i = 0; i < k2; i++)
-            out[i] = src[i - k2 + n];
-        for (size_t i = 0; i < n - k2; i++)
-            out[i + k2] = -src[i];
-    }
-}
 }  // namespace
 
 // out = src * X^k
@@ -321,14 +321,14 @@ void do_SEI_IKS_GBTLWE2TRLWE(TRLWELvl1& w, const GateKey& gk)
     TLWELvl0 tlwel0;
     TFHEpp::IdentityKeySwitch<TFHEpp::lvl10param>(tlwel0, tlwel1, gk.ksk);
     TFHEpp::GateBootstrappingTLWE2TRLWEFFT<TFHEpp::lvl01param>(w, tlwel0,
-                                                               gk.bkfftlvl01);
+        gk.bkfftlvl01);
 }
 
 // BootstrappingTLWE-to-TRLWE
 // {0, 1/2} -> {0, 1/2}
 // NOTE: src is MODIFIED for efficiency!
 void BS_TLWE_0_1o2_to_TRLWE_0_1o2(TRLWELvl1& out, TLWELvl0& src,
-                                  const GateKey& gk)
+    const GateKey& gk)
 {
     using namespace TFHEpp;
 
@@ -336,7 +336,7 @@ void BS_TLWE_0_1o2_to_TRLWE_0_1o2(TRLWELvl1& out, TLWELvl0& src,
     src[Lvl0::n] -= (1 << 30);  // 1/4
     // Bootstrapping without changing plaintext space
     BlindRotate<lvl01param>(out, src, gk.bkfftlvl01,
-                            μpolygen<Lvl1, (1 << 30) /* 1/4 */>());
+        μpolygen<Lvl1, (1 << 30) /* 1/4 */>());
     // Convert {-1/4, 1/4} to {0, 1/2}
     out[1][0] += (1 << 30);  // 1/4
 }
@@ -345,7 +345,7 @@ void BS_TLWE_0_1o2_to_TRLWE_0_1o2(TRLWELvl1& out, TLWELvl0& src,
 // {0, 1/2} -> {-1/8, 1/8}
 // NOTE: src is MODIFIED for efficiency!
 void BS_TLWE_0_1o2_to_TRLWE_m1o8_1o8(TRLWELvl1& out, TLWELvl0& src,
-                                     const GateKey& gk)
+    const GateKey& gk)
 {
     using namespace TFHEpp;
 
@@ -353,7 +353,7 @@ void BS_TLWE_0_1o2_to_TRLWE_m1o8_1o8(TRLWELvl1& out, TLWELvl0& src,
     src[Lvl0::n] -= (1 << 30);  // 1/4
     // Bootstrapping and convert {-1/4, 1/4} to {-1/8, 1/8}
     BlindRotate<lvl01param>(out, src, gk.bkfftlvl01,
-                            μpolygen<Lvl1, (1 << 29) /* 1/8 */>());
+        μpolygen<Lvl1, (1 << 29) /* 1/8 */>());
 }
 
 // w = w |> SEI |> IKS(gk) |> GateBootstrappingTLWE2TRLWE(gk)
@@ -387,7 +387,7 @@ void do_SEI_IKS_GBTLWE2TRLWE_3(TRLWELvl1& w, const GateKey& gk)
 
 TRGSWLvl1FFT encrypt_bit_to_TRGSWLvl1FFT(bool b, const SecretKey& skey)
 {
-    return TFHEpp::trgswfftSymEncrypt<Lvl1>({b}, Lvl1::α, skey.key.lvl1);
+    return TFHEpp::trgswfftSymEncrypt<Lvl1>({ b }, Lvl1::α, skey.key.lvl1);
 }
 
 bool decrypt_TLWELvl1_to_bit(const TLWELvl1& c, const SecretKey& skey)
@@ -440,14 +440,14 @@ std::string weight2bitstring(const PolyLvl1& w)
 }
 
 void CircuitBootstrappingFFTLvl01(TRGSWLvl1FFT& out, const TLWELvl0& src,
-                                  const CircuitKey& circuit_key)
+    const CircuitKey& circuit_key)
 {
     TFHEpp::CircuitBootstrappingFFT<TFHEpp::lvl02param, TFHEpp::lvl21param>(
         out, src, circuit_key);
 }
 
 void HomXORwoSE(TRLWELvl1& out, const TLWELvl0& lhs, const TLWELvl0& rhs,
-                const GateKey& gate_key)
+    const GateKey& gate_key)
 {
     TLWELvl0 temp;
     for (int i = 0; i <= Lvl0::n; i++)
